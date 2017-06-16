@@ -1,1 +1,111 @@
-<?php 
+<?php
+function dna_menu() {
+    $items['dna'] = array(
+        'title' => 'DNA Completer',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('dna_form'),
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
+    );
+    $items['second_helix_page'] = array(
+        'title' => "Here's your better half!",
+        'page callback' => 'second_helix',
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+function dna_form() {
+    $form['dna'] = array(
+        '#title' => 'Your Helix',
+        '#type' => 'textfield',
+        '#description' => t('Enter your helix sequence. This should consist of only the letters A, C, G, & T to represent the 4 nucleotides! (Separate the letter by spaces or commas or nothing at all...)'),
+        '#required' => TRUE,
+        '#element_validate' => array('element_validate_letters'),
+    );
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Pair my helix!',
+    );
+    return $form;
+}
+
+function element_validate_letters($element) {
+    $element_array = str_split(strtoupper($element['#value']));
+    $non_nucleotides = array(
+        "B",
+        "D",
+        "E",
+        "F",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "0",
+    );
+    $count = 0;
+    foreach ($element_array as $character) {
+        if(in_array($character, $non_nucleotides)) {
+            $count++;
+        }
+    }
+
+    if($count > 0) {
+        form_error($element, t("Please use only letters that represent nucleotides (A, C, G, & T)."));
+    }
+}
+
+function dna_convert($input_array) {
+    $second_helix_array = array();
+    foreach ($input_array as $nucleotide) {
+        if($nucleotide == "A") {
+            array_push($second_helix_array, "T");
+        } elseif ($nucleotide == "T") {
+            array_push($second_helix_array, "A");
+        } elseif ($nucleotide == "C") {
+            array_push($second_helix_array, "G");
+        } elseif ($nucleotide == "G") {
+            array_push($second_helix_array, "C");
+        }
+    }
+    return $second_helix_array;
+}
+
+function dna_form_submit($form, &$form_state) {
+    $inputNoPunct = preg_replace("#[[:punct:]]#", "", strtoupper($form_state['values']['dna']));
+    $input_array = str_split($inputNoPunct);
+    $second_helix_array = dna_convert($input_array);
+
+    $_SESSION['second_helix'] = implode(" ", $second_helix_array);
+    $_SESSION['inputted_helix'] = implode(" ", $input_array);
+
+    $form_state['redirect'] = 'second_helix_page';
+}
+
+function second_helix() {
+    return '<p>Your inputted helix was ' . $_SESSION['inputted_helix'] . '</p> <p>The helix to complete a perfect double helix is ' . $_SESSION['second_helix'] . '</p>';
+}

@@ -1,0 +1,7 @@
+name = DNA helix matcher
+description = User inputs in one half of a DNA strain, and the output is the match half.
+package = AAA Modules
+core = 7.x
+files[] = dna.module
+files[] = dna.test
+dependencies[] = simpletest

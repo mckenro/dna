@@ -1,69 +1,12 @@
 <?php
-
-class DnaFindPairTestCase extends DrupalUnitTestCase
-{
-    public static function getInfo()
-    {
-        return array(
-        'name' => 'DNA Tests',
-        'description' => 'Tests that the DNA strand Assembler is functioning properly.',
-        'group' => 'Code Review Tests',
-        );
-    }
-
-    function testDnaFindPair()
-    {
-        $description = 'A DNA molecule of A returns the molecule T';
-        $input = 'A';
-        $result = dna_find_pair($input);
-        $expected_output = 'T';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'A DNA molecule of T returns the molecule A';
-        $input = 'T';
-        $result = dna_find_pair($input);
-        $expected_output = 'A';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'A DNA molecule of C returns the molecule G';
-        $input = 'C';
-        $result = dna_find_pair($input);
-        $expected_output = 'G';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'A DNA molecule of G returns the molecule C.';
-        $input = 'G';
-        $result = dna_find_pair($input);
-        $expected_output = 'C';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'The input of a space is returned as null character.';
-        $input = ' ';
-        $result = dna_find_pair($input);
-        $expected_output = '';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'An input of ATCG returns TAGC.';
-        $input = 'ATCG';
-        $result = dna_find_strand($input);
-        $expected_output = 'TAGC';
-        $this->assertEqual($result, $expected_output, $description);
-
-        $description = 'An input of A T C G returns TAGC.';
-        $input = 'A T C G';
-        $result = dna_find_strand($input);
-        $expected_output = 'TAGC';
-        $this->assertEqual($result, $expected_output, $description);
-    }
-}
-
-class DnaModuleTests extends DrupalWebTestCase {
+//Functional testing
+class DnaTests extends DrupalWebTestCase {
 
     public static function getInfo() {
         return array(
-            'name' => 'DNA Tests',
-            'description' => 'tests for the DNA assembly Module.',
-            'group' => 'Code Review Tests',
+            'name' => 'DNA App Functions',
+            'description' => 'Tests for the functionality of the DNA Module.',
+            'group' => 'AAA Modules',
         );
     }
 
@@ -74,37 +17,78 @@ class DnaModuleTests extends DrupalWebTestCase {
     public function testDnaValid() {
         $this->drupalGet('dna');
 
-        $this->assertText("DNA Strand Assembler", 'Form displayed!');
+        $this->assertText("DNA Completer", 'Form displayed!');
 
         $form = array();
-        $form['input_strand'] = 'TAGC';
-        $this->drupalPost('dna', $form, t('assemble'));
+        $form['dna'] = "atcg";
+        $this->drupalPost('dna', $form, t('Pair my helix!'));
 
-        $this->assertText("'1st strand: TAGC / '2nd strand: ATCG", 'Output displayed!');
+        $this->assertText("DNA Completer", 'Output displayed!');
     }
 
-    public function testDnaValid() {
+    public function testDnaInvalid() {
         $this->drupalGet('dna');
 
-        $this->assertText("DNA Strand Assembler", 'Form displayed!');
+        $this->assertText("DNA Completer", 'Form displayed!');
 
         $form = array();
-        $form['input_strand'] = 'TAGC';
-        $this->drupalPost('dna', $form, t('assemble'));
+        $form['dna'] = "n9m";
+        $this->drupalPost('dna', $form, t('Pair my helix!'));
 
-        $this->assertText("Assembled DNA strand!", 'Output displayed!');
+        $this->assertText("DNA Completer", 'Error displayed!');
     }
 
-    public function testDnaInvalidCharacters() {
-        $this->drupalGet('dna');
+}
 
-        $this->assertText("DNA Strand Assembler", 'Form displayed!');
 
-        $form = array();
-        $form['input_strand'] = 'ATCbf GcG!';
-        $this->drupalPost('dna', $form, t('assemble'));
-
-        $this->assertText('Only the case sensitive letters A, T, C, and G are accepted.');
+//Unit testing
+class DnaTestCase extends DrupalUnitTestCase
+{
+    public static function getInfo()
+    {
+        return array(
+            'name' => 'DNA Completer',
+            'description' => 'Application that completes the second helix',
+            'group' => 'AAA Modules',
+        );
     }
 
+    function testDNA()
+    {
+        $description = 'a single input of a should return t';
+        $input = array('A');
+        $result = dna_convert($input);
+        $expected_output = array('T');
+        $this->assertEqual($result, $expected_output, $description);
+
+        $description = 't single input of a should return a';
+        $input = array('T');
+        $result = dna_convert($input);
+        $expected_output = array('A');
+        $this->assertEqual($result, $expected_output, $description);
+
+        $description = 'c single input of a should return g';
+        $input = array('C');
+        $result = dna_convert($input);
+        $expected_output = array('G');
+        $this->assertEqual($result, $expected_output, $description);
+
+        $description = 'g single input of a should return c';
+        $input = array('G');
+        $result = dna_convert($input);
+        $expected_output = array('C');
+        $this->assertEqual($result, $expected_output, $description);
+
+        $description = 'application should be able handle two-character input from user';
+        $input = array('A', 'T');
+        $result = dna_convert($input);
+        $expected_output = array('T', 'A');
+        $this->assertEqual($result, $expected_output, $description);
+
+        $description = 'application should be able handle multiple-character input from user';
+        $input = array('A','T','C','G','G','C','T','A','T','C','G','A',);
+        $result = dna_convert($input);
+        $expected_output = array('T','A','G','C','C','G','A','T','A','G','C','T',);
+        $this->assertEqual($result, $expected_output, $description);
+    }
 }

@@ -1,5 +1,0 @@
-name = Ajax for Friday Project
-description = Display Nodes with Ajax.
-package = AAA Modules
-core = 7.x
-files[] = ajacks.module
